@@ -1,0 +1,5 @@
+.env
+/node_modules/
+sandbox.jsx.env
+package.json
+package-lock.json
