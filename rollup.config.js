@@ -1,28 +1,50 @@
-import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
-import babel from '@rollup/plugin-babel';
+import resolve from '@rollup/plugin-node-resolve';
+import typescript from '@rollup/plugin-typescript';
 import postcss from 'rollup-plugin-postcss';
+import { babel } from '@rollup/plugin-babel';
 
 export default {
-  input: 'src/index.js',
-  output: [
-    { file: 'dist/index.cjs.js', format: 'cjs' },
-    { file: 'dist/index.esm.js', format: 'esm' },
-  ],
+  input: 'index.ts',
+  output: {
+    dir: 'dist',
+    format: 'cjs',
+    exports: 'named',
+    globals: {
+      'react': 'React',
+      'react-dom': 'ReactDOM'
+    }
+  },
   plugins: [
-    resolve({
-      extensions: ['.js', '.jsx'],
-    }),
-    commonjs(),
-    postcss({
-      extract: true, // Extract CSS into a separate file
-      minimize: true, // Minify the CSS
-    }),
     babel({
-      babelHelpers: 'bundled',
-      extensions: ['.js', '.jsx'],
-      presets: ['@babel/preset-react'],
+      babelHelpers: 'runtime',
+      extensions: ['.ts', '.tsx'],
+      presets: [
+        '@babel/preset-react',
+        '@babel/preset-typescript'
+      ],
+      plugins: [
+        '@babel/plugin-transform-runtime'
+      ]
     }),
+    resolve({
+      browser: true,
+      preferBuiltins: false
+    }),
+    postcss({
+      extract: true, // Extracts CSS to separate file
+      modules: false, // Set to true if using CSS modules
+      minimize: true, // Minify CSS in production
+      inject: false // Disable automatic injection
+    }),
+    commonjs({
+      include: /node_modules/,
+      requireReturnsDefault: 'auto'
+    }),
+    typescript({
+      tsconfig: './tsconfig.json'
+    })
   ],
-  external: ['react', 'react-dom'], // Prevent bundling React and ReactDOM
+  external: ['react', 'react-dom', 'react/jsx-runtime'],
+  
 };
